@@ -8,9 +8,9 @@ class Store:
         self.engine = create_engine("postgresql://postgres:187533@127.0.0.1:5433/bookstore2", 
                                     max_overflow=0,
                                     # 链接池大小
-                                    pool_size=5,
+                                    pool_size=50,
                                     # 链接池中没有可用链接则最多等待的秒数，超过该秒数后报错
-                                    pool_timeout=10,
+                                    pool_timeout=5,
                                     # 多久之后对链接池中的链接进行一次回收
                                     pool_recycle=1,
                                     # 不查看原生语句（未格式化）

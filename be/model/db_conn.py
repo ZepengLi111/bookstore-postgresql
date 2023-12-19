@@ -11,8 +11,8 @@ class User(Base):
     __tablename__ = "user"
     id = Column(VARCHAR(64), primary_key=True, comment="主键")
     username = Column(VARCHAR(64), nullable=True, comment="用户名")
-    token = Column(VARCHAR(256), nullable=True, comment="token")
-    password = Column(VARCHAR(64), nullable=False, comment="密码")
+    token = Column(VARCHAR(512), nullable=True, comment="token")
+    password = Column(VARCHAR(256), nullable=False, comment="密码")
     terminal = Column(VARCHAR(256), nullable=True, comment="终端")
     balance = Column(Integer, nullable=False, default=0, comment="余额")
 
