@@ -6,6 +6,7 @@ import json
 
 bp_seller = Blueprint("seller", __name__, url_prefix="/seller")
 
+# TODO check all API token
 
 @bp_seller.route("/create_store", methods=["POST"])
 def seller_create_store():
@@ -40,5 +41,17 @@ def add_stock_level():
 
     s = seller.Seller()
     code, message = s.add_stock_level(user_id, store_id, book_id, add_num)
+
+    return jsonify({"message": message}), code
+
+
+@bp_seller.route("/send", methods=["POST"])
+def send():
+    seller_id: str = request.json.get("user_id")
+    store_id: str = request.json.get("store_id")
+    order_id: str = request.json.get("order_id")
+
+    s = seller.Seller()
+    code, message = s.send(seller_id, store_id, order_id)
 
     return jsonify({"message": message}), code
