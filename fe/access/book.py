@@ -3,6 +3,7 @@ import sqlite3 as sqlite
 import random
 import base64
 import simplejson as json
+import uuid
 
 
 class Book:
@@ -56,10 +57,11 @@ class BookDB:
             "content, tags, picture FROM book ORDER BY id "
             "LIMIT ? OFFSET ?",
             (size, start),
-        )
+        ) 
         for row in cursor:
             book = Book()
-            book.id = row[0]
+            # TODO fix book_id overlap bug 
+            book.id = f"{row[0]}_{uuid.uuid1()}"
             book.title = row[1]
             book.author = row[2]
             book.publisher = row[3]
