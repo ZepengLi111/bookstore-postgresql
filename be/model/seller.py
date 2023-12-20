@@ -137,6 +137,7 @@ class Seller(db_conn.DBConn):
                 return error.error_order_state(order.state)
             else:
                 order.state = 2
+            self.session.commit()
 
         except sqlalchemy.exc.SQLAlchemyError as e:
             self.session.rollback()
