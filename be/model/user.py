@@ -147,6 +147,7 @@ class User(db_conn.DBConn):
             if user is None:
                 return error.error_authorization_fail()
 
+            # TODO DO NOT DELETE
             self.session.delete(user)
             self.session.commit()
  
