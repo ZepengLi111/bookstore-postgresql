@@ -111,3 +111,33 @@ class Buyer(db_conn.DBConn):
             return 530, "Internal server error: {}".format(str(e)),
 
         return 200, "ok"
+
+    def receive(self, buyer_id:str, order_id:str) -> (int, str):
+        try:
+            # code, message = self.User.check_token(user_id, token)
+            # if code != 200:
+                # return code, message
+            user = self.fetch_user(buyer_id)
+            if not user:
+                return error.error_non_exist_user_id(buyer_id)
+
+            order = self.fetch_order(order_id)
+            if not order:
+                return error.error_non_exist_order_id(order_id)
+
+            print("order state: ", order.state)
+
+            if order.state != 2:
+                return error.error_order_state(order.state)
+
+            order.state = 3
+            self.session.commit()
+
+        except sqlalchemy.exc.SQLAlchemyError as e:
+            self.session.rollback()
+            return 528, "SQL error: {}".format(str(e)),
+        except Exception as e:
+            self.session.rollback()
+            return 530, "Internal server error: {}".format(str(e)),
+
+        return 200, "ok"
