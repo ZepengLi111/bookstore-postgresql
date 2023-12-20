@@ -9,7 +9,7 @@ Base = declarative_base()
 class User(Base):
     """用户"""
     __tablename__ = "user"
-    id = Column(VARCHAR(64), primary_key=True, comment="主键")
+    id = Column(VARCHAR(128), primary_key=True, comment="主键")
     username = Column(VARCHAR(64), nullable=True, comment="用户名")
     token = Column(VARCHAR(512), nullable=True, comment="token")
     password = Column(VARCHAR(256), nullable=False, comment="密码")
@@ -19,8 +19,8 @@ class User(Base):
 class Store(Base):
     """商店"""
     __tablename__ = "store"
-    id = Column(VARCHAR(64), primary_key=True, comment="主键")
-    seller_id = Column(VARCHAR(64), 
+    id = Column(VARCHAR(128), primary_key=True, comment="主键")
+    seller_id = Column(VARCHAR(128), 
                        ForeignKey(
                             "user.id",
                             ondelete="CASCADE",
@@ -33,11 +33,11 @@ class Store(Base):
 class Order(Base):
     """订单"""
     __tablename__ = "order"
-    id = Column(VARCHAR(64), primary_key=True, comment="主键")
+    id = Column(VARCHAR(256), primary_key=True, comment="主键")
     create_time = Column(Time, nullable=False, comment="创建时间")
     state = Column(Integer, nullable=False, comment="订单状态", default=0)
     total_price = Column(Integer, nullable=False, comment="总价格")
-    store_id = Column(  VARCHAR(64),
+    store_id = Column(  VARCHAR(128),
                         ForeignKey(
                            "store.id",
                            ondelete="CASCADE",
@@ -46,7 +46,7 @@ class Order(Base):
                         nullable=False,
                         comment="商店id"
                     )
-    buyer_id = Column(VARCHAR(64),
+    buyer_id = Column(VARCHAR(128),
                       ForeignKey(
                           "user.id",
                           ondelete="CASCADE",
@@ -61,7 +61,7 @@ class Order(Base):
 class OrderBook(Base):
     """订单和书籍关系表"""
     __tablename__ = "order_book"
-    book_id = Column(VARCHAR(64),
+    book_id = Column(VARCHAR(128),
                       ForeignKey(
                           "book.id",
                           ondelete="CASCADE",
@@ -69,7 +69,7 @@ class OrderBook(Base):
                       ),
                       nullable=False
                     )
-    order_id = Column(VARCHAR(64),
+    order_id = Column(VARCHAR(256),
                       ForeignKey(
                           "order.id",
                           ondelete="CASCADE",
@@ -90,11 +90,11 @@ class OrderBook(Base):
 class Book(Base):
     """书籍"""
     __tablename__ = "book"
-    id = Column(VARCHAR(64), primary_key=True, comment="主键")
+    id = Column(VARCHAR(128), primary_key=True, comment="主键")
     title = Column(VARCHAR(64), nullable=False, comment="书名")
-    author = Column(VARCHAR(64), nullable=False, comment="作者")
+    author = Column(VARCHAR(64), nullable=True, comment="作者")
     publisher = Column(VARCHAR(64), nullable=True, comment="出版社")
-    original_title = Column(VARCHAR(64), nullable=True, comment="原书名")
+    original_title = Column(VARCHAR(256), nullable=True, comment="原书名")
     translator = Column(VARCHAR(64), nullable=True, comment="译者")
     pub_year = Column(VARCHAR(64), nullable=True, comment="出版年")
     pages = Column(VARCHAR(64), nullable=True, comment="页数")
@@ -106,11 +106,22 @@ class Book(Base):
     book_intro = Column(Text, nullable=True, comment="书籍简介")
     content = Column(Text, nullable=True, comment="内容简介")
     picture = Column(Text, nullable=True, comment="图片")
+    stock = Column(Integer, nullable=False, default=0, comment="库存")
+    store_id = Column(VARCHAR(128),
+                      ForeignKey(
+                          "store.id",
+                          ondelete="CASCADE",
+                          onupdate="CASCADE",
+                      ),
+                      nullable=False,
+                      
+                      )
+    store = relationship("Store", backref="books")
 
 class Tag(Base):
     """标签"""
     __tablename__ = "tag"
-    book_id = Column(VARCHAR(64),
+    book_id = Column(VARCHAR(128),
                       ForeignKey(
                           "book.id",
                           ondelete="CASCADE",
