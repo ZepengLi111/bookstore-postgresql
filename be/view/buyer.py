@@ -2,6 +2,7 @@ from flask import Blueprint
 from flask import request
 from flask import jsonify
 from be.model.buyer import Buyer
+import json
 
 bp_buyer = Blueprint("buyer", __name__, url_prefix="/buyer")
 
@@ -68,3 +69,23 @@ def cancel_order():
     code, message = b.cancel_order(user_id, order_id)
     print(message)
     return jsonify({"message": message}), code
+
+@bp_buyer.route("/search_global", methods=["POST"])
+def search_global():
+    keyword: str = request.json.get("keyword")
+    page: int = request.json.get("page")
+    user_id: str = request.json.get("user_id")
+    b = Buyer()
+    code, message, results, count, page = b.search_global(keyword, page, user_id)
+    print(results)
+    return jsonify({"message": message, "books": results, "count": count, "page": page}), code
+
+@bp_buyer.route("/search_in_store", methods=["POST"])
+def search_in_store():
+    keyword: str = request.json.get("keyword")
+    page: int = request.json.get("page")
+    store_id: str = request.json.get("store_id")
+    user_id: str = request.json.get("user_id")
+    b = Buyer()
+    code, message, results, count, page = b.search_in_store(keyword, page, store_id, user_id)
+    return jsonify({"message": message, "books": results, "count": count, "page": page}), code

@@ -81,3 +81,21 @@ class Buyer:
         headers = {"token": self.token}
         r = requests.post(url, headers=headers, json=json)
         return r.status_code
+
+    def search_global(self, keyword: str, user_id: str, page: int = None) -> (int, int):
+        if page is None:
+            page = 0
+        json = {"keyword": keyword, "page": page, "user_id": user_id}
+        url = urljoin(self.url_prefix, "search_global")
+        headers = {"token": self.token}
+        r = requests.post(url, headers=headers, json=json)
+        return r.status_code, r.json().get('page')
+
+    def search_in_store(self, keyword: str, store_id: str, user_id: str, page: int = None) -> (int, int):
+        if page is None:
+            page = 0
+        json = {"keyword": keyword, "page": page, "store_id": store_id, "user_id": user_id}
+        url = urljoin(self.url_prefix, "search_in_store")
+        headers = {"token": self.token}
+        r = requests.post(url, headers=headers, json=json)
+        return r.status_code, r.json().get('page')

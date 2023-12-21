@@ -138,10 +138,11 @@ class Tag(Base):
 
 class DBConn:
     def __init__(self):
-        self.engine = store.get_db_engine()
+        self.engine, self.mongodb = store.get_db_engine()
         Base.metadata.create_all(self.engine)
         DbSession = sessionmaker(bind=self.engine)
         self.session = scoped_session(DbSession)
+        
 
     def fetch_user(self, user_id) -> User | None:
         result = self.session.query(User).filter(User.id == user_id).first()

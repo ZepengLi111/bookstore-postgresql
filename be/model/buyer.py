@@ -7,6 +7,8 @@ from be.model import db_conn
 from be.model import error
 import datetime
 
+page_size = 10
+
 
 class Buyer(db_conn.DBConn):
     def __init__(self):
@@ -197,3 +199,71 @@ class Buyer(db_conn.DBConn):
             return 530, "Internal server error: {}".format(str(e))
 
         return 200, "ok"
+
+    def search_global(self, keyword: str, page: int, user_id: str) -> (int, str, list, int, int):
+        try:
+            user = self.fetch_user(user_id)
+            if not user:
+                return error.error_authorization_fail() + ([], 0, 0)
+
+            # 没有page，默认第一页
+            if page is None or page == 0:
+                page = 1
+            if page < 0:
+                return error.error_invalid_parameter(page) + ([], 0, 0)
+            
+            results = list(self.mongodb.find({'$text':{'$search': keyword}}, {'id':1, '_id': 0}))
+            
+            count = len(results)
+            max_page = int(count / page_size) + 1
+            if page > max_page:
+                page = max_page
+            
+            min_idx = (page-1) * page_size
+            max_idx = page * page_size
+            results = [b['id'] for idx, b in enumerate(results) if idx < max_idx and idx >= min_idx]
+
+        except sqlalchemy.exc.SQLAlchemyError as e:
+            self.session.rollback()
+            return 528, "SQL error: {}".format(str(e)), [], 0, 0
+        except Exception as e:
+            self.session.rollback()
+            return 530, "Internal server error: {}".format(str(e)), [], 0, 0
+        return 200, "ok", results, count, page
+
+    def search_in_store(self, keyword: str, page: int, store_id: str, user_id: str) -> (int, str, list, int, int):
+        try:
+            user = self.fetch_user(user_id)
+            if not user:
+                return error.error_authorization_fail() + ([], 0, 0)
+            store = self.fetch_store(store_id)
+            if not store:
+                return error.error_non_exist_store_id(store_id) + ([], 0, 0)
+            
+            # 没有page，默认第一页
+            if page is None or page == 0:
+                page = 1
+            if page < 0:
+                return error.error_invalid_parameter(page) + ([], 0, 0)
+            results = list(self.mongodb.find({'$text':{'$search': keyword}, 'store_id':store_id}, {'_id':0, 'id':1}))
+            count = len(results)
+            max_page = int(count / page_size) + 1
+            if page > max_page:
+                page = max_page
+            
+            min_idx = (page-1) * page_size
+            max_idx = page * page_size
+            results = [b['id'] for idx, b in enumerate(results) if idx < max_idx and idx >= min_idx]
+                
+
+        except sqlalchemy.exc.SQLAlchemyError as e:
+            self.session.rollback()
+            return 528, "SQL error: {}".format(str(e)), [], 0, 0
+        except Exception as e:
+            self.session.rollback()
+            return 530, "Internal server error: {}".format(str(e)), [], 0, 0
+        return 200, "ok", results, count, page
+
+
+
+            

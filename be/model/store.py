@@ -1,5 +1,6 @@
 import logging
 from sqlalchemy import create_engine
+from pymongo import MongoClient
 
 
 class Store:
@@ -16,18 +17,14 @@ class Store:
                                     # 不查看原生语句（未格式化）
                                     echo=False)
 
-        # self.init_tables()
-
-    # def init_tables(self):
-    #     try:
-    #         # conn = self.get_db_conn()
-            
-    #     except sqlite.Error as e:
-    #         logging.error(e)
-    #         conn.rollback()
-
-    # def get_db_conn(self) -> sqlite.Connection:
-    #     return sqlite.connect(self.database)
+        self.mongo_client = MongoClient('mongodb://127.0.0.1:27017/')
+        self.mongodb = self.mongo_client['bookstore']
+        try: 
+            self.mongodb['book_info'].create_index([('id', 1)], unique=True)
+            self.mongodb['book_info'].create_index([('searchable_words', 'text')])
+            self.mongodb['book_info'].create_index([('store_id', 1)])
+        except Exception as e:
+            print(e)
 
 
 database_instance: Store = None
@@ -40,4 +37,4 @@ def init_database():
 
 def get_db_engine():
     global database_instance
-    return database_instance.engine
+    return database_instance.engine, database_instance.mongodb['book_info']

@@ -4,10 +4,7 @@ from be.model import error
 from be.model import db_conn
 import sqlalchemy
 import json
-
-class A:
-    def __init__(self, **kwargs):
-        print(kwargs)
+from be.utils.segment_book_words import generate_book_kwords
 
 class Seller(db_conn.DBConn):
     def __init__(self):
@@ -34,8 +31,8 @@ class Seller(db_conn.DBConn):
             
             book_dict = json.loads(book_json_str)
 
-            # TODO store picture & content
-            # TODO tags table
+            # TODO store picture & content ##### finished
+            # TODO tags table ##### finished
             new_book = db_conn.Book(id=book_id, 
                             store_id=store_id, 
                             stock=stock_level, 
@@ -52,10 +49,21 @@ class Seller(db_conn.DBConn):
                             author_intro=book_dict.get('author_intro', ''),
                             book_intro=book_dict.get('book_intro', ''),
                             )
-
+            for tag in book_dict.get('tags', []):
+                new_tag = db_conn.Tag(book_id=book_id, tag_name=tag)
+                self.session.add(new_tag)
+            
             self.session.add(new_book)
             self.session.commit()
-
+            segment_words = generate_book_kwords(book_dict)
+            book_info = {
+                "id": book_id,
+                "content": book_dict.get('content', ''),
+                "picture": book_dict.get('pictures', ''),
+                "searchable_words": segment_words,
+                "store_id": store_id,
+            }
+            self.mongodb.insert_one(book_info)
         except sqlalchemy.exc.SQLAlchemyError as e:
             self.session.rollback()
             return 528, "SQL error: {}".format(str(e)),
