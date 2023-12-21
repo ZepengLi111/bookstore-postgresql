@@ -49,3 +49,22 @@ def send():
     b = Buyer()
     code, message = b.receive(user_id, order_id)
     return jsonify({"message": message}), code
+
+@bp_buyer.route("/check_order", methods=["POST"])
+def check_order():
+    user_id: str = request.json.get("user_id")
+    order_id: str = request.json.get("order_id")
+
+    b = Buyer()
+    code, message, data = b.check_order(user_id, order_id)
+    return jsonify({"message": message, "data": data}), code
+
+@bp_buyer.route("/cancel_order", methods=["POST"])
+def cancel_order():
+    user_id: str = request.json.get("user_id")
+    order_id: str = request.json.get("order_id")
+
+    b = Buyer()
+    code, message = b.cancel_order(user_id, order_id)
+    print(message)
+    return jsonify({"message": message}), code

@@ -58,3 +58,26 @@ class Buyer:
         headers = {"token": self.token}
         r = requests.post(url, headers=headers, json=json)
         return r.status_code
+
+    def check_order(self, user_id: str, order_id: str) -> (int, str):
+        json = {
+            "user_id": user_id,
+            "order_id": order_id
+        }
+        url = urljoin(self.url_prefix, "check_order")
+
+        headers = {"token": self.token}
+        r = requests.post(url, headers=headers, json=json)
+        return r.status_code, r.json().get("data")
+
+    
+    def cancel_order(self, user_id: str, order_id: str) -> int:
+        json = {
+            "user_id": user_id,
+            "order_id": order_id
+        }
+        url = urljoin(self.url_prefix, "cancel_order")
+
+        headers = {"token": self.token}
+        r = requests.post(url, headers=headers, json=json)
+        return r.status_code

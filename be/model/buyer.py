@@ -65,6 +65,7 @@ class Buyer(db_conn.DBConn):
 
     def payment(self, user_id: str, password: str, order_id: str) -> (int, str):
         try:
+            # TODO order auto cancel before pay & check
             order = self.fetch_order(order_id)
             if order is None:
                 return error.error_invalid_order_id(order_id)
@@ -139,5 +140,60 @@ class Buyer(db_conn.DBConn):
         except Exception as e:
             self.session.rollback()
             return 530, "Internal server error: {}".format(str(e)),
+
+        return 200, "ok"
+
+    def check_order(self, user_id:str, order_id:int) -> (int, str, str):
+        try:
+            # code, message = self.User.check_token(user_id, token)
+            # if code != 200:
+                # return code, message
+            user = self.fetch_user(user_id)
+            if not user:
+                return error.error_non_exist_user_id(user_id) + ("",)
+
+            order = self.fetch_order(order_id)
+            if not order:
+                return error.error_invalid_order_id(order_id) + ("",)
+
+            data = {
+                "order_id": order.id,
+                "order_state": order.state,
+            }
+
+        except sqlalchemy.exc.SQLAlchemyError as e:
+            self.session.rollback()
+            return 528, "SQL error: {}".format(str(e)), ""
+        except Exception as e:
+            self.session.rollback()
+            return 530, "Internal server error: {}".format(str(e)), ""
+
+        return 200, "ok", data.__str__()
+
+    def cancel_order(self, user_id:str, order_id:int) -> (int, str):
+        try:
+            # code, message = self.User.check_token(user_id, token)
+            # if code != 200:
+                # return code, message
+            user = self.fetch_user(user_id)
+            if not user:
+                return error.error_non_exist_user_id(user_id)
+
+            order = self.fetch_order(order_id)
+            if not order:
+                return error.error_invalid_order_id(order_id)
+
+            if order.state != 0:
+                return error.error_order_state(order.state)
+
+            order.state = 4
+            self.session.commit()
+
+        except sqlalchemy.exc.SQLAlchemyError as e:
+            self.session.rollback()
+            return 528, "SQL error: {}".format(str(e))
+        except Exception as e:
+            self.session.rollback()
+            return 530, "Internal server error: {}".format(str(e))
 
         return 200, "ok"
